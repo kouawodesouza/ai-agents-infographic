@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agents Explained – Coach Fredo AI Consulting</title>
+<!-- Safe Google Fonts: Poppins (display) + DM Sans (body) — wide browser support -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- QRCode.js from cdnjs — generates a real scannable QR -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #0B1437;
+    --royal:  #1E3A8A;
+    --blue:   #2563EB;
+    --sky:    #3B82F6;
+    --accent: #60A5FA;
+    --silver: #CBD5E1;
+    --white:  #FFFFFF;
+    --glass:  rgba(255,255,255,0.07);
+    --glass2: rgba(255,255,255,0.12);
+    /* font stacks — Poppins/DM Sans load from Google; fallbacks always work */
+    --font-display: 'Poppins', 'Arial Black', Arial, sans-serif;
+    --font-body:    'DM Sans', Arial, Helvetica, sans-serif;
+  }
+
+  body {
+    background: #070E24;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    font-family: var(--font-body);
+    padding: 24px 12px;
+  }
+
+  /* ── CANVAS ─────────────────────────── */
+  .canvas {
+    width: 1080px;
+    background: linear-gradient(170deg, #0B1437 0%, #07102A 40%, #030915 100%);
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+  }
+  .orb {
+    position: absolute; border-radius: 50%;
+    filter: blur(80px); pointer-events: none; z-index: 0;
+  }
+  .orb1 { width:520px;height:520px;top:-120px;left:-100px;background:rgba(37,99,235,0.28); }
+  .orb2 { width:400px;height:400px;top:600px;right:-120px;background:rgba(96,165,250,0.18); }
+  .orb3 { width:350px;height:350px;top:1800px;left:-80px;background:rgba(30,58,138,0.35); }
+  .orb4 { width:420px;height:420px;top:2800px;right:-100px;background:rgba(37,99,235,0.22); }
+  .orb5 { width:380px;height:380px;top:4000px;left:50%;transform:translateX(-50%);background:rgba(96,165,250,0.15); }
+
+  .grid-bg {
+    position:absolute;inset:0;z-index:0;
+    background-image:
+      linear-gradient(rgba(96,165,250,0.04) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(96,165,250,0.04) 1px,transparent 1px);
+    background-size:54px 54px;
+  }
+
+  .content { position:relative;z-index:1;padding:56px 72px; }
+
+  /* ── HEADER ─────────────────────────── */
+  .header { text-align:center;margin-bottom:52px; }
+
+  .brand-bar { display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:40px; }
+  .brand-logo {
+    width:52px;height:52px;border-radius:14px;
+    background:linear-gradient(135deg,#1E3A8A,#2563EB);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-display);font-size:20px;font-weight:800;color:#fff;
+    box-shadow:0 0 24px rgba(37,99,235,0.5);
+    flex-shrink:0;
+  }
+  .brand-text { text-align:left; }
+  .brand-name { font-family:var(--font-display);font-size:15px;font-weight:700;color:#fff;letter-spacing:.02em; }
+  .brand-tag  { font-size:11px;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-top:3px; }
+
+  .divider-h {
+    width:100%;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(96,165,250,0.4),transparent);
+    margin:28px 0;
+  }
+
+  .hero-pill {
+    display:inline-block;
+    background:rgba(37,99,235,0.2);border:1px solid rgba(96,165,250,0.35);
+    color:var(--accent);
+    font-family:var(--font-body);font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;
+    padding:6px 20px;border-radius:100px;margin-bottom:22px;
+  }
+
+  .hero-title {
+    font-family:var(--font-display);font-size:62px;font-weight:900;line-height:1.05;
+    margin-bottom:16px;
+    background:linear-gradient(135deg,#fff 30%,#93C5FD 100%);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  }
+
+  .hero-sub {
+    font-family:var(--font-body);font-size:16px;font-weight:400;
+    color:var(--silver);line-height:1.7;max-width:720px;margin:0 auto 36px;
+  }
+
+  .hero-visual { display:flex;align-items:center;justify-content:center;gap:0; }
+  .hero-node   { display:flex;flex-direction:column;align-items:center;gap:8px; }
+  .hero-icon {
+    width:72px;height:72px;border-radius:18px;
+    background:var(--glass2);border:1px solid rgba(96,165,250,0.25);
+    display:flex;align-items:center;justify-content:center;font-size:28px;
+    backdrop-filter:blur(12px);box-shadow:0 4px 24px rgba(37,99,235,0.2);
+  }
+  .hero-icon.center {
+    width:88px;height:88px;border-radius:22px;font-size:34px;
+    background:linear-gradient(135deg,rgba(37,99,235,0.5),rgba(96,165,250,0.3));
+    border:1.5px solid rgba(96,165,250,0.5);
+    box-shadow:0 0 36px rgba(37,99,235,0.45),0 4px 24px rgba(0,0,0,0.3);
+  }
+  .hero-label-sm { font-family:var(--font-body);font-size:10px;color:var(--silver);font-weight:500;text-align:center; }
+  .hero-arrow    { font-size:20px;color:rgba(96,165,250,0.5);margin:0 12px;padding-bottom:28px; }
+
+  /* ── SECTION CHROME ──────────────────── */
+  .section { margin-bottom:52px; }
+  .section-eyebrow { display:flex;align-items:center;gap:12px;margin-bottom:20px; }
+  .eyebrow-dot {
+    width:8px;height:8px;border-radius:50%;flex-shrink:0;
+    background:linear-gradient(135deg,#2563EB,#60A5FA);
+    box-shadow:0 0 8px rgba(96,165,250,0.6);
+  }
+  .eyebrow-line { flex:1;height:1px;background:linear-gradient(90deg,rgba(96,165,250,0.3),transparent); }
+  .section-label { font-family:var(--font-body);font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent); }
+  .section-title { font-family:var(--font-display);font-size:28px;font-weight:800;color:#fff;margin-bottom:24px;line-height:1.2; }
+
+  /* ── SEC 1 – DEFINITION ──────────────── */
+  .def-card {
+    background:var(--glass);border:1px solid rgba(96,165,250,0.18);
+    border-radius:20px;padding:32px 36px;backdrop-filter:blur(16px);
+    position:relative;overflow:hidden;
+  }
+  .def-card::before {
+    content:'';position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,var(--blue),var(--accent),transparent);
+  }
+  .def-text { font-family:var(--font-body);font-size:15px;color:var(--silver);line-height:1.75;margin-bottom:24px; }
+  .def-hi   { color:#fff;font-weight:600; }
+
+  .flow-mini { display:flex;align-items:center;justify-content:center;gap:0;margin-top:28px; }
+  .flow-node {
+    background:rgba(37,99,235,0.2);border:1px solid rgba(96,165,250,0.25);
+    border-radius:12px;padding:12px 20px;
+    font-family:var(--font-body);font-size:13px;color:#fff;font-weight:600;text-align:center;white-space:nowrap;
+  }
+  .flow-node.ai {
+    background:linear-gradient(135deg,rgba(37,99,235,0.45),rgba(96,165,250,0.25));
+    border-color:rgba(96,165,250,0.45);box-shadow:0 0 20px rgba(37,99,235,0.35);
+  }
+  .flow-arrow { font-size:18px;color:rgba(96,165,250,0.5);margin:0 8px; }
+
+  .caps-label {
+    margin-top:28px;margin-bottom:14px;
+    font-family:var(--font-body);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);
+  }
+  .ex-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:10px; }
+  .ex-chip {
+    background:rgba(37,99,235,0.15);border:1px solid rgba(96,165,250,0.2);
+    border-radius:10px;padding:10px 12px;
+    display:flex;align-items:center;gap:8px;
+    font-family:var(--font-body);font-size:12px;color:#fff;font-weight:500;
+  }
+  .ex-chip .ic { font-size:16px;line-height:1; }
+
+  /* ── SEC 2 – BENEFITS ────────────────── */
+  .six-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:16px; }
+  .benefit-card {
+    background:var(--glass);border:1px solid rgba(96,165,250,0.15);
+    border-radius:16px;padding:24px 22px;backdrop-filter:blur(12px);
+  }
+  .b-icon {
+    width:46px;height:46px;border-radius:12px;
+    background:linear-gradient(135deg,rgba(37,99,235,0.4),rgba(96,165,250,0.2));
+    border:1px solid rgba(96,165,250,0.3);
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;margin-bottom:14px;
+  }
+  .b-title { font-family:var(--font-display);font-size:15px;font-weight:700;color:#fff;margin-bottom:6px; }
+  .b-desc  { font-family:var(--font-body);font-size:12.5px;color:var(--silver);line-height:1.65; }
+
+  /* ── SEC 3 – WORKFLOW ────────────────── */
+  .workflow { display:flex;flex-direction:column;align-items:center;gap:0; }
+  .wf-step {
+    display:flex;align-items:center;gap:20px;
+    background:var(--glass);border:1px solid rgba(96,165,250,0.15);
+    border-radius:14px;padding:18px 28px;
+    width:100%;max-width:680px;backdrop-filter:blur(10px);
+  }
+  .wf-num {
+    width:38px;height:38px;border-radius:50%;flex-shrink:0;
+    background:linear-gradient(135deg,#1E3A8A,#2563EB);
+    border:1.5px solid rgba(96,165,250,0.4);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-display);font-size:14px;font-weight:800;color:#fff;
+    box-shadow:0 0 14px rgba(37,99,235,0.4);
+  }
+  .wf-ico  { font-size:24px;flex-shrink:0; }
+  .wf-text { flex:1; }
+  .wf-ttl  { font-family:var(--font-display);font-size:14px;font-weight:700;color:#fff; }
+  .wf-sub  { font-family:var(--font-body);font-size:12px;color:var(--silver);margin-top:2px; }
+  .wf-conn { width:2px;height:22px;background:linear-gradient(to bottom,rgba(96,165,250,0.4),transparent);margin:0 auto; }
+
+  /* ── SEC 4 – USE CASES ───────────────── */
+  .uc-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:16px; }
+  .uc-card {
+    background:var(--glass);border:1px solid rgba(96,165,250,0.15);
+    border-radius:18px;padding:28px 24px;backdrop-filter:blur(12px);
+    position:relative;overflow:hidden;
+  }
+  .uc-card::before {
+    content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,var(--blue),var(--accent));
+  }
+  .uc-ico   { font-size:30px;margin-bottom:12px;display:block; }
+  .uc-title { font-family:var(--font-display);font-size:15px;font-weight:700;color:#fff;margin-bottom:12px;line-height:1.3; }
+  .uc-list  { list-style:none;margin-bottom:18px; }
+  .uc-list li {
+    font-family:var(--font-body);font-size:12.5px;color:var(--silver);padding:4px 0;
+    display:flex;align-items:flex-start;gap:8px;
+  }
+  .uc-list li::before { content:'›';color:var(--accent);font-weight:700;font-size:15px;line-height:1.3;flex-shrink:0; }
+  .uc-benefit {
+    background:rgba(37,99,235,0.18);border:1px solid rgba(96,165,250,0.25);
+    border-radius:8px;padding:10px 14px;
+  }
+  .uc-b-label { font-family:var(--font-body);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--silver);font-weight:500;margin-bottom:3px; }
+  .uc-b-text  { font-family:var(--font-body);font-size:12px;color:var(--accent);font-weight:600; }
+
+  /* ── SEC 5 – COMPARISON ──────────────── */
+  .compare-wrap {
+    display:grid;grid-template-columns:1fr 1fr;gap:0;
+    border:1px solid rgba(96,165,250,0.18);border-radius:18px;overflow:hidden;
+  }
+  .compare-col { padding:32px 28px; }
+  .compare-col.without { background:rgba(255,255,255,0.03); }
+  .compare-col.with    { background:linear-gradient(135deg,rgba(37,99,235,0.18),rgba(96,165,250,0.08));border-left:1px solid rgba(96,165,250,0.2); }
+  .c-head {
+    font-family:var(--font-display);font-size:15px;font-weight:700;margin-bottom:20px;
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  }
+  .compare-col.without .c-head { color:#94A3B8; }
+  .compare-col.with    .c-head { color:#fff; }
+  .c-badge {
+    font-family:var(--font-body);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    padding:4px 10px;border-radius:100px;
+  }
+  .compare-col.without .c-badge { background:rgba(148,163,184,0.15);color:#94A3B8;border:1px solid rgba(148,163,184,0.2); }
+  .compare-col.with    .c-badge { background:rgba(37,99,235,0.3);color:var(--accent);border:1px solid rgba(96,165,250,0.35); }
+  .c-list { list-style:none; }
+  .c-list li {
+    font-family:var(--font-body);font-size:13px;padding:9px 0;
+    border-bottom:1px solid rgba(255,255,255,0.05);
+    display:flex;align-items:center;gap:10px;
+  }
+  .c-list li:last-child { border-bottom:none; }
+  .compare-col.without .c-list li { color:#64748B; }
+  .compare-col.with    .c-list li { color:#fff; }
+  .ico-x { color:#475569;font-size:14px;flex-shrink:0;font-weight:700; }
+  .ico-c { color:#60A5FA;font-size:14px;flex-shrink:0;font-weight:700; }
+
+  /* ── SEC 6 – CALLOUT ─────────────────── */
+  .callout {
+    border-radius:20px;padding:44px 48px;
+    background:linear-gradient(135deg,rgba(30,58,138,0.5) 0%,rgba(37,99,235,0.25) 100%);
+    border:1px solid rgba(96,165,250,0.3);
+    text-align:center;position:relative;overflow:hidden;
+  }
+  .callout::before {
+    content:'';position:absolute;inset:0;
+    background:radial-gradient(ellipse at 50% 0%,rgba(96,165,250,0.12),transparent 70%);
+  }
+  .callout-emoji { font-size:42px;margin-bottom:16px;display:block; }
+  .callout-main  {
+    font-family:var(--font-display);font-size:34px;font-weight:900;color:#fff;
+    line-height:1.15;margin-bottom:20px;position:relative;
+  }
+  .callout-sub {
+    font-family:var(--font-body);font-size:15.5px;color:var(--silver);
+    line-height:1.7;max-width:560px;margin:0 auto 28px;position:relative;
+  }
+  .callout-steps {
+    display:flex;align-items:center;justify-content:center;
+    gap:0;flex-wrap:wrap;position:relative;
+  }
+  .c-step {
+    background:rgba(37,99,235,0.25);border:1px solid rgba(96,165,250,0.3);
+    border-radius:100px;padding:10px 22px;
+    font-family:var(--font-body);font-size:13px;font-weight:700;color:#fff;white-space:nowrap;
+  }
+  .c-arr { font-size:16px;color:var(--accent);margin:0 8px; }
+
+  /* ── FOOTER ──────────────────────────── */
+  .footer {
+    background:rgba(7,14,36,0.8);border-top:1px solid rgba(96,165,250,0.15);
+    margin:0 -72px -56px;padding:44px 72px;
+    display:grid;grid-template-columns:1fr auto;align-items:center;gap:40px;
+  }
+  .f-label    { font-family:var(--font-body);font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:8px; }
+  .f-headline { font-family:var(--font-display);font-size:22px;font-weight:800;color:#fff;margin-bottom:10px;line-height:1.3; }
+  .f-body     { font-family:var(--font-body);font-size:13px;color:var(--silver);line-height:1.65;max-width:520px;margin-bottom:16px; }
+  .f-url      { display:inline-flex;align-items:center;gap:8px;font-family:var(--font-body);font-size:13.5px;font-weight:700;color:var(--accent);text-decoration:none; }
+
+  /* QR block */
+  .qr-block { text-align:center; }
+  .qr-wrap  {
+    width:140px;height:140px;background:#fff;border-radius:14px;
+    padding:8px;margin:0 auto 8px;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 24px rgba(37,99,235,0.35);
+  }
+  #qrcode-canvas { display:block; }
+  .qr-label { font-family:var(--font-body);font-size:10px;color:var(--silver);letter-spacing:.06em;text-transform:uppercase; }
+
+  /* ── RESPONSIVE ──────────────────────── */
+  @media(max-width:1100px){
+    .canvas{width:100%}
+    .content{padding:40px 36px}
+    .footer{margin:0 -36px -40px;padding:32px 36px}
+    .hero-title{font-size:46px}
+  }
+  @media(max-width:720px){
+    .content{padding:28px 20px}
+    .footer{margin:0 -20px -28px;padding:28px 20px;grid-template-columns:1fr}
+    .six-grid,.uc-grid{grid-template-columns:1fr 1fr}
+    .ex-grid{grid-template-columns:repeat(2,1fr)}
+    .hero-title{font-size:32px}
+    .compare-wrap{grid-template-columns:1fr}
+    .compare-col.with{border-left:none;border-top:1px solid rgba(96,165,250,0.2)}
+    .callout{padding:28px 24px}
+    .callout-main{font-size:26px}
+  }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="orb orb4"></div>
+  <div class="orb orb5"></div>
+  <div class="grid-bg"></div>
+
+  <div class="content">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="brand-bar">
+        <div class="brand-logo">CF</div>
+        <div class="brand-text">
+          <div class="brand-name">Coach Fredo AI Consulting LLC</div>
+          <div class="brand-tag">Making AI Simple for Businesses</div>
+        </div>
+      </div>
+      <div class="divider-h"></div>
+      <div class="hero-pill">Executive Briefing &middot; AI Intelligence Series</div>
+      <div class="hero-title">AI Agents Explained</div>
+      <p class="hero-sub">What They Are, What They Do, and How They Can Transform Your Business. Think of an AI Agent as a smart digital employee that performs tasks, makes decisions, and works alongside your team &mdash; 24 hours a day.</p>
+      <div class="hero-visual">
+        <div class="hero-node">
+          <div class="hero-icon">&#128100;</div>
+          <div class="hero-label-sm">Your Team</div>
+        </div>
+        <div class="hero-arrow">&rarr;</div>
+        <div class="hero-node">
+          <div class="hero-icon center">&#129302;</div>
+          <div class="hero-label-sm">AI Agent</div>
+        </div>
+        <div class="hero-arrow">&rarr;</div>
+        <div class="hero-node">
+          <div class="hero-icon">&#128202;</div>
+          <div class="hero-label-sm">Business Data</div>
+        </div>
+        <div class="hero-arrow">&rarr;</div>
+        <div class="hero-node">
+          <div class="hero-icon">&#9989;</div>
+          <div class="hero-label-sm">Task Done</div>
+        </div>
+        <div class="hero-arrow">&rarr;</div>
+        <div class="hero-node">
+          <div class="hero-icon">&#128200;</div>
+          <div class="hero-label-sm">Growth</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEC 1 -->
+    <div class="section">
+      <div class="section-eyebrow">
+        <div class="eyebrow-dot"></div>
+        <div class="section-label">Section 01</div>
+        <div class="eyebrow-line"></div>
+      </div>
+      <div class="section-title">What Is an AI Agent?</div>
+      <div class="def-card">
+        <p class="def-text">
+          An AI Agent is <span class="def-hi">intelligent software that can understand requests, make decisions, complete tasks, and interact with people or other software</span> &mdash; with minimal human supervision. Unlike a chatbot that mainly answers questions, <span class="def-hi">an AI Agent can actually perform work.</span>
+        </p>
+        <div class="flow-mini">
+          <div class="flow-node">Person</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-node ai">AI Agent</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-node">Completed Task &#10003;</div>
+        </div>
+        <div class="caps-label">What it can do for you</div>
+        <div class="ex-grid">
+          <div class="ex-chip"><span class="ic">&#128231;</span> Read emails</div>
+          <div class="ex-chip"><span class="ic">&#128197;</span> Schedule meetings</div>
+          <div class="ex-chip"><span class="ic">&#128172;</span> Answer customers</div>
+          <div class="ex-chip"><span class="ic">&#128269;</span> Search documents</div>
+          <div class="ex-chip"><span class="ic">&#128196;</span> Generate reports</div>
+          <div class="ex-chip"><span class="ic">&#128260;</span> Update systems</div>
+          <div class="ex-chip"><span class="ic">&#9889;</span> Trigger workflows</div>
+          <div class="ex-chip"><span class="ic">&#128202;</span> Analyze data</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEC 2 -->
+    <div class="section">
+      <div class="section-eyebrow">
+        <div class="eyebrow-dot"></div>
+        <div class="section-label">Section 02</div>
+        <div class="eyebrow-line"></div>
+      </div>
+      <div class="section-title">What Can AI Agents Do for Your Business?</div>
+      <div class="six-grid">
+        <div class="benefit-card">
+          <div class="b-icon">&#9201;</div>
+          <div class="b-title">Save Time</div>
+          <div class="b-desc">Automate repetitive work so employees can focus on higher-value tasks that drive real results.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="b-icon">&#128172;</div>
+          <div class="b-title">Improve Customer Service</div>
+          <div class="b-desc">Provide instant, accurate answers to customers around the clock &mdash; no wait times.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="b-icon">&#128200;</div>
+          <div class="b-title">Increase Sales</div>
+          <div class="b-desc">Respond to leads faster and follow up automatically, turning more inquiries into customers.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="b-icon">&#128176;</div>
+          <div class="b-title">Reduce Costs</div>
+          <div class="b-desc">Handle routine tasks without adding staff, cutting overhead while scaling capacity.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="b-icon">&#127919;</div>
+          <div class="b-title">Improve Accuracy</div>
+          <div class="b-desc">Reduce manual errors and standardize processes across every department.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="b-icon">&#129504;</div>
+          <div class="b-title">Better Decisions</div>
+          <div class="b-desc">Analyze business data and surface useful insights so leadership can act with confidence.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEC 3 -->
+    <div class="section">
+      <div class="section-eyebrow">
+        <div class="eyebrow-dot"></div>
+        <div class="section-label">Section 03</div>
+        <div class="eyebrow-line"></div>
+      </div>
+      <div class="section-title">How an AI Agent Works</div>
+      <div class="workflow">
+        <div class="wf-step">
+          <div class="wf-num">1</div>
+          <div class="wf-ico">&#128229;</div>
+          <div class="wf-text">
+            <div class="wf-ttl">Customer Request Arrives</div>
+            <div class="wf-sub">A message, email, form submission, or trigger is received</div>
+          </div>
+        </div>
+        <div class="wf-conn"></div>
+        <div class="wf-step">
+          <div class="wf-num">2</div>
+          <div class="wf-ico">&#129504;</div>
+          <div class="wf-text">
+            <div class="wf-ttl">AI Understands the Request</div>
+            <div class="wf-sub">Natural language processing identifies intent and context</div>
+          </div>
+        </div>
+        <div class="wf-conn"></div>
+        <div class="wf-step">
+          <div class="wf-num">3</div>
+          <div class="wf-ico">&#128269;</div>
+          <div class="wf-text">
+            <div class="wf-ttl">Looks Up Information</div>
+            <div class="wf-sub">Searches connected databases, documents, and business systems</div>
+          </div>
+        </div>
+        <div class="wf-conn"></div>
+        <div class="wf-step">
+          <div class="wf-num">4</div>
+          <div class="wf-ico">&#9878;</div>
+          <div class="wf-text">
+            <div class="wf-ttl">Makes a Decision</div>
+            <div class="wf-sub">Applies business logic and rules to determine the best action</div>
+          </div>
+        </div>
+        <div class="wf-conn"></div>
+        <div class="wf-step">
+          <div class="wf-num">5</div>
+          <div class="wf-ico">&#9889;</div>
+          <div class="wf-text">
+            <div class="wf-ttl">Completes the Task</div>
+            <div class="wf-sub">Executes autonomously &mdash; books, sends, updates, routes, or responds</div>
+          </div>
+        </div>
+        <div class="wf-conn"></div>
+        <div class="wf-step">
+          <div class="wf-num">6</div>
+          <div class="wf-ico">&#128202;</div>
+          <div class="wf-text">
+            <div class="wf-ttl">Reports the Result</div>
+            <div class="wf-sub">Logs the action and notifies your team with a full summary</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEC 4 -->
+    <div class="section">
+      <div class="section-eyebrow">
+        <div class="eyebrow-dot"></div>
+        <div class="section-label">Section 04</div>
+        <div class="eyebrow-line"></div>
+      </div>
+      <div class="section-title">Real AI Agents Every Small Business Can Use</div>
+      <div class="uc-grid">
+        <div class="uc-card">
+          <span class="uc-ico">&#127911;</span>
+          <div class="uc-title">Customer Support Agent</div>
+          <ul class="uc-list">
+            <li>Answer FAQs instantly</li>
+            <li>Track orders and status</li>
+            <li>Provide business hours</li>
+            <li>Route complex issues to staff</li>
+          </ul>
+          <div class="uc-benefit">
+            <div class="uc-b-label">Business Benefit</div>
+            <div class="uc-b-text">Faster service and happier customers</div>
+          </div>
+        </div>
+        <div class="uc-card">
+          <span class="uc-ico">&#128197;</span>
+          <div class="uc-title">Appointment Booking Agent</div>
+          <ul class="uc-list">
+            <li>Check real-time availability</li>
+            <li>Schedule and confirm meetings</li>
+            <li>Send automated reminders</li>
+            <li>Reduce no-shows significantly</li>
+          </ul>
+          <div class="uc-benefit">
+            <div class="uc-b-label">Business Benefit</div>
+            <div class="uc-b-text">Less admin work, more bookings</div>
+          </div>
+        </div>
+        <div class="uc-card">
+          <span class="uc-ico">&#128640;</span>
+          <div class="uc-title">Sales and Lead Qualification</div>
+          <ul class="uc-list">
+            <li>Capture new inquiries instantly</li>
+            <li>Ask qualifying questions</li>
+            <li>Recommend products and services</li>
+            <li>Schedule sales calls automatically</li>
+          </ul>
+          <div class="uc-benefit">
+            <div class="uc-b-label">Business Benefit</div>
+            <div class="uc-b-text">Higher conversions, faster response</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEC 5 -->
+    <div class="section">
+      <div class="section-eyebrow">
+        <div class="eyebrow-dot"></div>
+        <div class="section-label">Section 05</div>
+        <div class="eyebrow-line"></div>
+      </div>
+      <div class="section-title">Business Without AI vs. Business With AI</div>
+      <div class="compare-wrap">
+        <div class="compare-col without">
+          <div class="c-head">
+            <span>&#9888;&#65039;</span> Without AI
+            <span class="c-badge">Current State</span>
+          </div>
+          <ul class="c-list">
+            <li><span class="ico-x">&#10005;</span> Manual, time-consuming work</li>
+            <li><span class="ico-x">&#10005;</span> Slow customer response times</li>
+            <li><span class="ico-x">&#10005;</span> Missed leads and opportunities</li>
+            <li><span class="ico-x">&#10005;</span> Higher operating costs</li>
+            <li><span class="ico-x">&#10005;</span> Staff stuck on repetitive tasks</li>
+            <li><span class="ico-x">&#10005;</span> Limited to business hours only</li>
+          </ul>
+        </div>
+        <div class="compare-col with">
+          <div class="c-head">
+            <span>&#10024;</span> With AI Agents
+            <span class="c-badge">Transformed</span>
+          </div>
+          <ul class="c-list">
+            <li><span class="ico-c">&#10003;</span> Automated, intelligent workflows</li>
+            <li><span class="ico-c">&#10003;</span> Instant responses, 24 hours a day</li>
+            <li><span class="ico-c">&#10003;</span> More qualified leads captured</li>
+            <li><span class="ico-c">&#10003;</span> Lower costs, higher output</li>
+            <li><span class="ico-c">&#10003;</span> Teams focused on high-value work</li>
+            <li><span class="ico-c">&#10003;</span> Always-on business support</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEC 6 -->
+    <div class="section">
+      <div class="section-eyebrow">
+        <div class="eyebrow-dot"></div>
+        <div class="section-label">Section 06</div>
+        <div class="eyebrow-line"></div>
+      </div>
+      <div class="callout">
+        <span class="callout-emoji">&#128640;</span>
+        <div class="callout-main">Start Small. Win Big.</div>
+        <p class="callout-sub">You do not need dozens of AI Agents. Start with just one. Save time. Increase productivity. Grow with confidence. Small, consistent improvements create extraordinary long-term business results.</p>
+        <div class="callout-steps">
+          <div class="c-step">Start with 1 Agent</div>
+          <div class="c-arr">&rarr;</div>
+          <div class="c-step">Save Time</div>
+          <div class="c-arr">&rarr;</div>
+          <div class="c-step">Increase Productivity</div>
+          <div class="c-arr">&rarr;</div>
+          <div class="c-step">Grow with Confidence</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <div>
+        <div class="f-label">Ready to Get Started?</div>
+        <div class="f-headline">Bring AI Into Your Business Today</div>
+        <p class="f-body">Coach Fredo AI Consulting LLC helps businesses discover, build, and implement practical AI solutions that save time, improve efficiency, and drive sustainable growth &mdash; without the overwhelm.</p>
+        <a class="f-url" href="https://coachfredoaiconsulting.com">
+          &#127760;&nbsp; coachfredoaiconsulting.com
+        </a>
+      </div>
+      <div class="qr-block">
+        <div class="qr-wrap">
+          <div id="qrcode-canvas"></div>
+        </div>
+        <div class="qr-label">Scan to visit website</div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /canvas -->
+
+<script>
+  // Generate a real, scannable QR code after DOM loads
+  window.addEventListener('load', function() {
+    var container = document.getElementById('qrcode-canvas');
+    if (typeof QRCode !== 'undefined') {
+      new QRCode(container, {
+        text: 'https://coachfredoaiconsulting.com',
+        width: 120,
+        height: 120,
+        colorDark: '#0B1437',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    } else {
+      // fallback: show URL text if lib fails to load
+      container.innerHTML = '<div style="font-size:9px;color:#0B1437;word-break:break-all;text-align:center;padding:4px;">coachfredoaiconsulting.com</div>';
+    }
+  });
+</script>
+</body>
+</html>
